@@ -128,6 +128,11 @@
   .install-tip b{ color:var(--ink); }
   .install-tip .icn{ flex:none; font-size:16px; }
 
+  .group-toggle-wrap{ max-width:640px; margin:0 auto; padding:14px 18px 0; }
+  .group-toggle{ display:flex; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:4px; gap:4px; }
+  .group-toggle-opt{ flex:1; text-align:center; padding:9px 10px; border-radius:9px; font-size:12.5px; font-weight:600; color:var(--mist); cursor:pointer; user-select:none; }
+  .group-toggle-opt.active{ background:var(--rust); color:#fff; }
+
   .hidden{ display:none !important; }
   @media (prefers-reduced-motion: reduce){ *{ transition:none !important; } }
 </style>
@@ -184,6 +189,12 @@
 </div>
 
 <!-- ============ CHECKLIST VIEW ============ -->
+<div class="group-toggle-wrap hidden" id="groupToggleWrap">
+  <div class="group-toggle">
+    <div class="group-toggle-opt" id="groupBySubjectBtn">Par matière</div>
+    <div class="group-toggle-opt" id="groupByTypeBtn">Par type (magasin)</div>
+  </div>
+</div>
 <div class="trail hidden" id="trail"></div>
 
 <div class="footer hidden" id="checklistFooter">
@@ -199,113 +210,124 @@
 const LEVELS = ["6ème","5ème","4ème","3ème"];
 const ISBN = {"6ème":"9782095051808","5ème":"9782095063214","4ème":"9782091716367","3ème":"9782091716374"};
 const CAT_ORDER = ["Toutes disciplines","Français","Éducation aux médias / CDI","Histoire-Géo-EMC","Anglais","Espagnol (LV2)","Italien (LV2)","Mathématiques","SVT","Sciences Physiques (SPC)","Technologie","Éducation musicale","Arts plastiques","EPS"];
+const TYPE_ORDER = ["Cahiers, classeurs & porte-vues","Papier & feuilles","Trousse & petite fourniture","Instruments de géométrie","Livres & cahiers d'exercices","Électronique & informatique","Sport & piscine","Divers"];
 
 function studentItems(s){
   const items = [];
-  const push = (cat,label,qty,note) => items.push({cat, label, qty: qty||1, note: note||"", owner: s.name});
+  const push = (cat,label,qty,note,type) => items.push({cat, label, qty: qty||1, note: note||"", owner: s.name, type: type || "Divers"});
+  const T = {
+    CAHIER: "Cahiers, classeurs & porte-vues",
+    PAPIER: "Papier & feuilles",
+    TROUSSE: "Trousse & petite fourniture",
+    GEO: "Instruments de géométrie",
+    LIVRE: "Livres & cahiers d'exercices",
+    ELEC: "Électronique & informatique",
+    SPORT: "Sport & piscine",
+    DIVERS: "Divers",
+  };
 
   // Toutes disciplines
-  push("Toutes disciplines","Écouteurs filaires");
-  push("Toutes disciplines","Porte-vues 80 vues (à garder 4 ans)");
-  push("Toutes disciplines","Trousse complète","1","Feutres ardoise · 12 crayons couleur · stylo 4 couleurs · stylo effaçable + effaceurs · feutres couleur/ardoise/noir fin · crayon à papier/critérium + mines · 4 surligneurs · colle · gomme · scotch · taille-crayon · ciseaux · règle 30cm non métallique");
-  push("Toutes disciplines","Feuilles simples et doubles grands carreaux (évaluations)");
-  push("Toutes disciplines","Œillets (boîte)");
-  push("Toutes disciplines","Clé USB 4-8 Go minimum");
-  push("Toutes disciplines","Cahier de textes ou agenda");
-  if(s.level === "6ème") push("Toutes disciplines","Calculatrice scientifique Casio Fx-92+","1","Achat à la rentrée — sert aussi en Mathématiques et en SPC");
-  push("Toutes disciplines","Cadenas à clé (casiers)");
+  push("Toutes disciplines","Écouteurs filaires",1,"",T.ELEC);
+  push("Toutes disciplines","Porte-vues 80 vues (à garder 4 ans)",1,"",T.CAHIER);
+  push("Toutes disciplines","Trousse complète","1","Feutres ardoise · 12 crayons couleur · stylo 4 couleurs · stylo effaçable + effaceurs · feutres couleur/ardoise/noir fin · crayon à papier/critérium + mines · 4 surligneurs · colle · gomme · scotch · taille-crayon · ciseaux · règle 30cm non métallique",T.TROUSSE);
+  push("Toutes disciplines","Feuilles simples et doubles grands carreaux (évaluations)",1,"",T.PAPIER);
+  push("Toutes disciplines","Œillets (boîte)",1,"",T.DIVERS);
+  push("Toutes disciplines","Clé USB 4-8 Go minimum",1,"",T.ELEC);
+  push("Toutes disciplines","Cahier de textes ou agenda",1,"",T.CAHIER);
+  if(s.level === "6ème") push("Toutes disciplines","Calculatrice scientifique Casio Fx-92+","1","Achat à la rentrée — sert aussi en Mathématiques et en SPC",T.ELEC);
+  push("Toutes disciplines","Cadenas à clé (casiers)",1,"",T.DIVERS);
 
   // Français
-  push("Français","Classeur souple épais A4");
-  push("Français","Paquet de 6 intercalaires");
-  push("Français","Grandes feuilles simples perforées, grands carreaux (100f/200p)");
-  push("Français","Grandes feuilles doubles perforées, grands carreaux (50f/200p)");
-  push("Français","Pochette cartonnée");
-  push("Français",`Cahier de grammaire Nathan (Terre des Lettres) — ${s.level}`,"1",`ISBN ${ISBN[s.level]}`);
+  push("Français","Classeur souple épais A4",1,"",T.CAHIER);
+  push("Français","Paquet de 6 intercalaires",1,"",T.CAHIER);
+  push("Français","Grandes feuilles simples perforées, grands carreaux (100f/200p)",1,"",T.PAPIER);
+  push("Français","Grandes feuilles doubles perforées, grands carreaux (50f/200p)",1,"",T.PAPIER);
+  push("Français","Pochette cartonnée",1,"",T.CAHIER);
+  push("Français",`Cahier de grammaire Nathan (Terre des Lettres) — ${s.level}`,"1",`ISBN ${ISBN[s.level]}`,T.LIVRE);
   if(s.level !== "6ème" && s.latin){
-    push("Français","Cahiers 24×32 cm, 48 pages grands carreaux — option Latin",2,"Réutilisables sur les 3 années — achat unique");
+    push("Français","Cahiers 24×32 cm, 48 pages grands carreaux — option Latin",2,"Réutilisables sur les 3 années — achat unique",T.CAHIER);
   }
 
   // CDI
   if(s.level === "6ème"){
-    push("Éducation aux médias / CDI","Classeur souple peu épais A4");
-    push("Éducation aux médias / CDI","Feuilles simples grands carreaux A4");
+    push("Éducation aux médias / CDI","Classeur souple peu épais A4",1,"",T.CAHIER);
+    push("Éducation aux médias / CDI","Feuilles simples grands carreaux A4",1,"",T.PAPIER);
   }
 
   // Histoire-Géo
-  push("Histoire-Géo-EMC","Grand cahier 24×32 cm, 96 pages grands carreaux");
-  push("Histoire-Géo-EMC","Copies simples et doubles grands carreaux (évaluations)");
+  push("Histoire-Géo-EMC","Grand cahier 24×32 cm, 96 pages grands carreaux",1,"",T.CAHIER);
+  push("Histoire-Géo-EMC","Copies simples et doubles grands carreaux (évaluations)",1,"",T.PAPIER);
 
   // Anglais
-  push("Anglais","Grand cahier 24×32 cm, 96 pages grands carreaux");
-  push("Anglais","Workbook","1","Achat à la rentrée, selon consignes du professeur");
+  push("Anglais","Grand cahier 24×32 cm, 96 pages grands carreaux",1,"",T.CAHIER);
+  push("Anglais","Workbook","1","Achat à la rentrée, selon consignes du professeur",T.LIVRE);
 
   // LV2 / bilangue
   if(s.level === "6ème"){
     if(s.bilangue){
-      push("Italien (LV2)","Petit cahier 96 pages grands carreaux","1","Option bilangue — 6ème");
-      push("Italien (LV2)","Grand cahier 96 pages 24×32 grands carreaux","1","Option bilangue — 6ème");
+      push("Italien (LV2)","Petit cahier 96 pages grands carreaux","1","Option bilangue — 6ème",T.CAHIER);
+      push("Italien (LV2)","Grand cahier 96 pages 24×32 grands carreaux","1","Option bilangue — 6ème",T.CAHIER);
     }
   } else {
     if(s.lv2 === "espagnol"){
-      push("Espagnol (LV2)","Grands cahiers 24×32 cm, 48 pages grands carreaux",2);
+      push("Espagnol (LV2)","Grands cahiers 24×32 cm, 48 pages grands carreaux",2,"",T.CAHIER);
     } else if(s.lv2 === "italien"){
       if(s.level === "5ème"){
-        push("Italien (LV2)","Petit cahier 96 pages grands carreaux");
-        push("Italien (LV2)","Grand cahier 96 pages 24×32 grands carreaux");
+        push("Italien (LV2)","Petit cahier 96 pages grands carreaux",1,"",T.CAHIER);
+        push("Italien (LV2)","Grand cahier 96 pages 24×32 grands carreaux",1,"",T.CAHIER);
       } else {
-        push("Italien (LV2)","Grand cahier 96 pages 24×32 grands carreaux");
+        push("Italien (LV2)","Grand cahier 96 pages 24×32 grands carreaux",1,"",T.CAHIER);
       }
     }
   }
 
   // Maths
-  push("Mathématiques","Papier millimétré et papier calque (quelques feuilles)");
-  push("Mathématiques","Équerre et rapporteur non métalliques");
-  push("Mathématiques","Compas");
-  push("Mathématiques","Cahiers 24×32 cm, 96 pages petits carreaux",2);
+  push("Mathématiques","Papier millimétré et papier calque (quelques feuilles)",1,"",T.PAPIER);
+  push("Mathématiques","Équerre et rapporteur non métalliques",1,"",T.GEO);
+  push("Mathématiques","Compas",1,"",T.GEO);
+  push("Mathématiques","Cahiers 24×32 cm, 96 pages petits carreaux",2,"",T.CAHIER);
 
   // SVT
-  push("SVT","Classeur A4 (réutilisable 4 ans)");
-  push("SVT","Grandes feuilles simples perforées, grands carreaux (50f/100p)");
-  push("SVT","Grandes feuilles de dessin perforées A4");
-  push("SVT","Quelques feuilles doubles grands carreaux");
-  push("SVT","Papier calque et papier millimétré");
+  push("SVT","Classeur A4 (réutilisable 4 ans)",1,"",T.CAHIER);
+  push("SVT","Grandes feuilles simples perforées, grands carreaux (50f/100p)",1,"",T.PAPIER);
+  push("SVT","Grandes feuilles de dessin perforées A4",1,"",T.PAPIER);
+  push("SVT","Quelques feuilles doubles grands carreaux",1,"",T.PAPIER);
+  push("SVT","Papier calque et papier millimétré",1,"",T.PAPIER);
 
   // SPC
-  push("Sciences Physiques (SPC)","Grand cahier 24×32 cm, 96 pages grands carreaux");
-  push("Sciences Physiques (SPC)","Vieux tee-shirt de protection manches courtes");
-  push("Sciences Physiques (SPC)","Élastique à cheveux");
-  push("Sciences Physiques (SPC)","Papier millimétré");
-  push("Sciences Physiques (SPC)","Feuilles simples et doubles grands carreaux");
-  if(s.level === "6ème") push("Sciences Physiques (SPC)","Porte-vues 60 vues (réutilisable 4 ans)","1","Pour les 6èmes et nouveaux élèves");
+  push("Sciences Physiques (SPC)","Grand cahier 24×32 cm, 96 pages grands carreaux",1,"",T.CAHIER);
+  push("Sciences Physiques (SPC)","Vieux tee-shirt de protection manches courtes",1,"",T.DIVERS);
+  push("Sciences Physiques (SPC)","Élastique à cheveux",1,"",T.DIVERS);
+  push("Sciences Physiques (SPC)","Papier millimétré",1,"",T.PAPIER);
+  push("Sciences Physiques (SPC)","Feuilles simples et doubles grands carreaux",1,"",T.PAPIER);
+  if(s.level === "6ème") push("Sciences Physiques (SPC)","Porte-vues 60 vues (réutilisable 4 ans)","1","Pour les 6èmes et nouveaux élèves",T.CAHIER);
 
   // Techno
   if(s.level !== "6ème"){
-    push("Technologie","Classeur A4 peu épais (réutilisable 3 ans)");
-    push("Technologie","Paquet de pochettes transparentes perforées");
-    push("Technologie","Grandes feuilles simples perforées, petits carreaux (50f/100p)");
+    push("Technologie","Classeur A4 peu épais (réutilisable 3 ans)",1,"",T.CAHIER);
+    push("Technologie","Paquet de pochettes transparentes perforées",1,"",T.PAPIER);
+    push("Technologie","Grandes feuilles simples perforées, petits carreaux (50f/100p)",1,"",T.PAPIER);
   }
 
   // Musique
-  push("Éducation musicale","Grand cahier 24×32 cm, 48 pages grands carreaux (réutilisable 4 ans)");
-  push("Éducation musicale","Stylo bleu ou noir simple (laissé dans le cahier)");
+  push("Éducation musicale","Grand cahier 24×32 cm, 48 pages grands carreaux (réutilisable 4 ans)",1,"",T.CAHIER);
+  push("Éducation musicale","Stylo bleu ou noir simple (laissé dans le cahier)",1,"",T.TROUSSE);
 
   // Arts plastiques
-  push("Arts plastiques","Grand cahier 24×32 cm, 48 pages grands carreaux (réutilisable 4 ans)");
+  push("Arts plastiques","Grand cahier 24×32 cm, 48 pages grands carreaux (réutilisable 4 ans)",1,"",T.CAHIER);
   if(s.level === "6ème" || s.level === "4ème"){
-    push("Arts plastiques","Paquet de feuilles Canson blanc 24×32 cm","1","À apporter à la 1ère séance");
+    push("Arts plastiques","Paquet de feuilles Canson blanc 24×32 cm","1","À apporter à la 1ère séance",T.PAPIER);
   }
 
   // EPS
-  push("EPS","Tenue de sport (short/jogging/legging + t-shirt de rechange)");
-  push("EPS","Vêtements de pluie");
-  push("EPS","Baskets extérieures");
-  push("EPS","Baskets intérieures (semelles non marquantes)");
-  push("EPS","Maillot de bain");
-  push("EPS","Bonnet de bain");
-  push("EPS","Lunettes de piscine");
-  push("EPS","Gourde d'eau");
+  push("EPS","Tenue de sport (short/jogging/legging + t-shirt de rechange)",1,"",T.SPORT);
+  push("EPS","Vêtements de pluie",1,"",T.SPORT);
+  push("EPS","Baskets extérieures",1,"",T.SPORT);
+  push("EPS","Baskets intérieures (semelles non marquantes)",1,"",T.SPORT);
+  push("EPS","Maillot de bain",1,"",T.SPORT);
+  push("EPS","Bonnet de bain",1,"",T.SPORT);
+  push("EPS","Lunettes de piscine",1,"",T.SPORT);
+  push("EPS","Gourde d'eau",1,"",T.SPORT);
 
   return items;
 }
@@ -318,6 +340,7 @@ let state = {
   count: 2,
   sameClass: true,
   commonLevel: "6ème",
+  groupBy: "subject",
   students: [
     {name:"", level:"6ème", bilangue:false, lv2:"espagnol", latin:false},
     {name:"", level:"6ème", bilangue:false, lv2:"espagnol", latin:false},
@@ -326,6 +349,7 @@ let state = {
 let checked = {};
 
 try{ const c = JSON.parse(localStorage.getItem(CONFIG_KEY)); if(c) state = c; }catch(e){}
+if(!state.groupBy) state.groupBy = "subject";
 try{ checked = JSON.parse(localStorage.getItem(CHECKED_KEY) || "{}"); }catch(e){ checked = {}; }
 
 function saveConfig(){ try{ localStorage.setItem(CONFIG_KEY, JSON.stringify(state)); }catch(e){} }
@@ -446,7 +470,7 @@ function buildMergedList(){
     const items = studentItems(Object.assign({}, s, {name}));
     items.forEach(it => {
       const key = it.cat + "||" + it.label + "||" + it.note;
-      if(!merged[key]) merged[key] = {cat: it.cat, label: it.label, note: it.note, qty: 0, owners: []};
+      if(!merged[key]) merged[key] = {cat: it.cat, label: it.label, note: it.note, type: it.type, qty: 0, owners: []};
       merged[key].qty += it.qty;
       merged[key].owners.push(name);
     });
@@ -458,10 +482,14 @@ function renderChecklist(){
   const merged = buildMergedList();
   const totalStudents = state.count;
 
+  const groupKey = state.groupBy === 'type' ? 'type' : 'cat';
+  const order = state.groupBy === 'type' ? TYPE_ORDER : CAT_ORDER;
+
   const byCat = {};
   Object.values(merged).forEach(it => {
-    if(!byCat[it.cat]) byCat[it.cat] = [];
-    byCat[it.cat].push(it);
+    const k = it[groupKey];
+    if(!byCat[k]) byCat[k] = [];
+    byCat[k].push(it);
   });
 
   const trail = document.getElementById('trail');
@@ -469,7 +497,7 @@ function renderChecklist(){
   let totalItems = 0, totalChecked = 0;
   let first = true;
 
-  CAT_ORDER.forEach(cat => {
+  order.forEach(cat => {
     const list = byCat[cat];
     if(!list || !list.length) return;
 
@@ -544,6 +572,7 @@ function showSetup(){
   document.getElementById('checklistFooter').classList.add('hidden');
   document.getElementById('progressWrap').classList.add('hidden');
   document.getElementById('gearBtn').classList.add('hidden');
+  document.getElementById('groupToggleWrap').classList.add('hidden');
   document.getElementById('heroEyebrow').textContent = "Configuration";
   document.getElementById('heroSubtitle').textContent = "Indiquez le nombre d'élèves, leur classe et leurs options pour générer la liste consolidée.";
   renderSetup();
@@ -554,11 +583,25 @@ function showChecklist(){
   document.getElementById('checklistFooter').classList.remove('hidden');
   document.getElementById('progressWrap').classList.remove('hidden');
   document.getElementById('gearBtn').classList.remove('hidden');
+  document.getElementById('groupToggleWrap').classList.remove('hidden');
   document.getElementById('heroEyebrow').textContent = "Rentrée 2026 / 2027";
   const names = state.students.map((s,i) => s.name && s.name.trim() ? s.name.trim() : `Élève ${i+1}`);
   document.getElementById('heroSubtitle').textContent = `Liste consolidée pour ${names.join(", ")}.`;
+  updateGroupToggleUI();
   renderChecklist();
 }
+
+function updateGroupToggleUI(){
+  document.getElementById('groupBySubjectBtn').classList.toggle('active', state.groupBy !== 'type');
+  document.getElementById('groupByTypeBtn').classList.toggle('active', state.groupBy === 'type');
+}
+
+document.getElementById('groupBySubjectBtn').addEventListener('click', () => {
+  state.groupBy = 'subject'; saveConfig(); updateGroupToggleUI(); renderChecklist();
+});
+document.getElementById('groupByTypeBtn').addEventListener('click', () => {
+  state.groupBy = 'type'; saveConfig(); updateGroupToggleUI(); renderChecklist();
+});
 
 document.getElementById('generateBtn').addEventListener('click', () => { saveConfig(); showChecklist(); });
 document.getElementById('gearBtn').addEventListener('click', showSetup);

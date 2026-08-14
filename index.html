@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Fournitures Allais">
+<meta name="theme-color" content="#16283D">
+<title>Fournitures scolaires — Collège Émile Allais</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#16283D; --navy-2:#1E3450; --ridge:#2E4A63;
+    --snow:#F5F7F5; --card:#FFFFFF;
+    --rust:#B5562B; --rust-dim:#B5562B22;
+    --gold:#D9A441; --mist:#8B9BA8; --ink:#1B2A33; --line:#E3E7E6;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0; background:var(--snow); overflow-x:hidden;}
+  body{ font-family:'Inter', -apple-system, sans-serif; color:var(--ink); padding-bottom:calc(48px + var(--safe-bottom)); }
+  ::selection{background:var(--gold); color:var(--navy);}
+
+  .hero{
+    position:relative;
+    background:linear-gradient(180deg, var(--navy) 0%, var(--navy-2) 70%, var(--ridge) 100%);
+    padding:calc(28px + var(--safe-top)) 24px 42px; color:var(--snow); overflow:hidden;
+  }
+  .hero svg.ridge{ position:absolute; left:0; right:0; bottom:-2px; width:100%; height:70px; opacity:.55; }
+  .eyebrow{ font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--gold); margin:0 0 10px; }
+  h1{ font-family:'Big Shoulders Display', sans-serif; font-weight:800; font-size:clamp(30px,8vw,42px); line-height:.95; letter-spacing:.01em; margin:0 0 6px; text-transform:uppercase; }
+  .subtitle{ font-size:14px; color:#C7D1D9; margin:0 0 20px; max-width:38ch; }
+  .hero-row{ display:flex; align-items:center; justify-content:space-between; gap:12px; position:relative; z-index:2; }
+  .gear-btn{
+    flex:none; display:flex; align-items:center; gap:6px;
+    font-family:'IBM Plex Mono', monospace; font-size:11.5px; letter-spacing:.04em;
+    color:var(--snow); background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.2);
+    padding:8px 12px; border-radius:20px; cursor:pointer;
+  }
+  .gear-btn:active{ background:rgba(255,255,255,.2); }
+  .progress-wrap{ position:relative; z-index:2; flex:1; }
+  .progress-row{ display:flex; justify-content:space-between; align-items:baseline; font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--mist); margin-bottom:8px; }
+  #progressCount{ color:var(--gold); font-weight:600; }
+  .progress-track{ height:8px; border-radius:5px; background:rgba(255,255,255,.12); overflow:hidden; }
+  .progress-fill{ height:100%; width:0%; border-radius:5px; background:linear-gradient(90deg, var(--rust), var(--gold)); transition:width .5s cubic-bezier(.4,0,.2,1); }
+
+  /* ---------- SETUP FORM ---------- */
+  .setup{ max-width:640px; margin:0 auto; padding:22px 18px 8px; }
+  .setup-card{ background:var(--card); border:1px solid var(--line); border-radius:16px; padding:18px; margin-bottom:16px; }
+  .setup-label{ font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--mist); margin:0 0 10px; }
+  .stepper{ display:flex; align-items:center; gap:16px; }
+  .step-btn{ width:38px; height:38px; border-radius:50%; border:2px solid var(--rust); background:var(--card); color:var(--rust); font-size:18px; font-weight:700; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+  .step-btn:active{ background:var(--rust-dim); }
+  .step-count{ font-family:'Big Shoulders Display', sans-serif; font-size:28px; font-weight:700; min-width:28px; text-align:center; }
+  .toggle-row{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  .toggle-text{ font-size:13.5px; line-height:1.4; }
+  .switch{ position:relative; flex:none; width:46px; height:26px; border-radius:14px; background:var(--line); cursor:pointer; transition:background .2s; }
+  .switch.on{ background:var(--rust); }
+  .switch::after{ content:""; position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:50%; background:#fff; transition:transform .2s; box-shadow:0 1px 2px rgba(0,0,0,.25); }
+  .switch.on::after{ transform:translateX(20px); }
+  select.class-select{
+    width:100%; padding:11px 14px; border-radius:10px; border:1px solid var(--line);
+    font-family:'Inter'; font-size:14.5px; background:var(--snow) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="6"><path d="M0 0l5 6 5-6z" fill="%238B9BA8"/></svg>') no-repeat right 14px center;
+    -webkit-appearance:none; appearance:none; color:var(--ink);
+  }
+  .student-card{ background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; margin-bottom:12px; }
+  .student-head{ display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+  .student-num{ font-family:'Big Shoulders Display', sans-serif; font-weight:800; font-size:15px; color:#fff; background:var(--rust); width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex:none; }
+  input.name-input{
+    flex:1; border:none; border-bottom:1.5px solid var(--line); padding:6px 2px;
+    font-family:'Big Shoulders Display', sans-serif; font-size:19px; font-weight:700; text-transform:uppercase;
+    letter-spacing:.02em; background:transparent; color:var(--ink);
+  }
+  input.name-input:focus{ outline:none; border-bottom-color:var(--rust); }
+  .field-group{ margin-bottom:12px; }
+  .field-label{ font-size:11.5px; color:var(--mist); margin:0 0 6px; font-family:'IBM Plex Mono', monospace; letter-spacing:.04em; }
+  .pill-row{ display:flex; gap:8px; flex-wrap:wrap; }
+  .pill{
+    padding:8px 14px; border-radius:20px; border:1.5px solid var(--line); background:var(--snow);
+    font-size:13px; color:var(--ink); cursor:pointer; user-select:none;
+  }
+  .pill.active{ background:var(--rust); border-color:var(--rust); color:#fff; }
+  .check-line{ display:flex; align-items:center; gap:10px; cursor:pointer; }
+  .check-line input[type=checkbox]{ width:18px; height:18px; accent-color:var(--rust); flex:none; }
+  .check-line span{ font-size:13.5px; }
+  .generate-btn{
+    width:100%; padding:15px; border:none; border-radius:14px;
+    background:linear-gradient(90deg, var(--rust), var(--gold)); color:#fff;
+    font-family:'Big Shoulders Display', sans-serif; font-weight:700; font-size:18px; letter-spacing:.03em;
+    text-transform:uppercase; cursor:pointer; margin-top:4px;
+  }
+  .generate-btn:active{ opacity:.85; }
+
+  /* ---------- LIST (checklist) ---------- */
+  .trail{ position:relative; padding:22px 18px 8px; max-width:640px; margin:0 auto; }
+  .category{ position:relative; padding-left:26px; margin-bottom:16px; }
+  .category::before{ content:""; position:absolute; left:6px; top:26px; bottom:-16px; width:2px; background:var(--line); }
+  .category:last-child::before{ display:none; }
+  .cat-head{ display:flex; align-items:center; gap:12px; cursor:pointer; user-select:none; padding:6px 0; }
+  .dot{ position:absolute; left:0; top:9px; width:14px; height:14px; border-radius:50%; background:var(--card); border:2px solid var(--mist); transition:all .3s ease; flex:none; }
+  .dot.done{ background:var(--gold); border-color:var(--gold); box-shadow:0 0 0 4px #D9A44122; }
+  .cat-title{ font-family:'Big Shoulders Display', sans-serif; font-weight:700; font-size:19px; letter-spacing:.02em; text-transform:uppercase; flex:1; }
+  .cat-count{ font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--mist); white-space:nowrap; }
+  .chevron{ width:10px; height:10px; border-right:2px solid var(--mist); border-bottom:2px solid var(--mist); transform:rotate(-45deg); transition:transform .25s ease; flex:none; }
+  .category.open .chevron{ transform:rotate(45deg); }
+  .items{ max-height:0; overflow:hidden; transition:max-height .4s ease; }
+  .category.open .items{ max-height:2400px; }
+  .item-row{ display:flex; align-items:flex-start; gap:12px; padding:10px 4px 10px 2px; border-bottom:1px solid var(--line); }
+  .item-row:last-child{ border-bottom:none; }
+  .check{ flex:none; width:22px; height:22px; margin-top:1px; border-radius:50%; border:2px solid var(--rust); display:flex; align-items:center; justify-content:center; transition:all .2s ease; cursor:pointer; }
+  .check svg{ width:12px; height:12px; opacity:0; transform:scale(.5); transition:all .2s ease; }
+  .item-row.checked .check{ background:var(--rust); }
+  .item-row.checked .check svg{ opacity:1; transform:scale(1); }
+  .item-text{ font-size:14.5px; line-height:1.4; cursor:pointer; flex:1; }
+  .item-row.checked .item-text{ color:var(--mist); text-decoration:line-through; text-decoration-color:var(--mist); }
+  .item-note{ display:block; font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--mist); margin-top:3px; }
+  .owner-chips{ display:flex; gap:5px; flex-wrap:wrap; margin-top:6px; }
+  .owner-chip{ font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:.03em; padding:2px 8px; border-radius:10px; background:var(--rust-dim); color:var(--rust); }
+
+  .footer{ max-width:640px; margin:20px auto 0; padding:0 22px; display:flex; flex-direction:column; gap:14px; }
+  .reset-btn{ align-self:flex-start; font-family:'IBM Plex Mono', monospace; font-size:12px; letter-spacing:.05em; color:var(--rust); background:none; border:1px solid var(--rust-dim); padding:9px 16px; border-radius:20px; cursor:pointer; }
+  .reset-btn:active{ background:var(--rust-dim); }
+  .install-tip{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px 16px; font-size:12.5px; color:var(--mist); line-height:1.5; display:flex; gap:10px; align-items:flex-start; }
+  .install-tip b{ color:var(--ink); }
+  .install-tip .icn{ flex:none; font-size:16px; }
+
+  .hidden{ display:none !important; }
+  @media (prefers-reduced-motion: reduce){ *{ transition:none !important; } }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <p class="eyebrow" id="heroEyebrow">Configuration</p>
+  <h1 id="heroTitle">Fournitures<br>Collège Émile Allais</h1>
+  <p class="subtitle" id="heroSubtitle">Indiquez le nombre d'élèves, leur classe et leurs options pour générer la liste consolidée.</p>
+  <div class="hero-row">
+    <div class="progress-wrap hidden" id="progressWrap">
+      <div class="progress-row"><span>PROGRESSION</span><span id="progressCount">0 / 0</span></div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+    <button class="gear-btn hidden" id="gearBtn">⚙ Modifier</button>
+  </div>
+  <svg class="ridge" viewBox="0 0 400 70" preserveAspectRatio="none">
+    <polyline points="0,60 40,30 70,45 110,15 150,40 190,10 230,38 270,20 310,48 350,25 400,55 400,70 0,70" fill="#0000" stroke="#D9A441" stroke-width="1.5"/>
+  </svg>
+</div>
+
+<!-- ============ SETUP VIEW ============ -->
+<div class="setup" id="setupView">
+
+  <div class="setup-card">
+    <p class="setup-label">Nombre d'élèves</p>
+    <div class="stepper">
+      <div class="step-btn" id="stepDown">–</div>
+      <div class="step-count" id="stepCount">2</div>
+      <div class="step-btn" id="stepUp">+</div>
+    </div>
+  </div>
+
+  <div class="setup-card">
+    <div class="toggle-row">
+      <div class="toggle-text"><b>Tous dans la même classe</b><br><span style="color:var(--mist)">Un seul sélecteur de classe pour tous les élèves</span></div>
+      <div class="switch on" id="sameClassSwitch"></div>
+    </div>
+    <div id="commonClassWrap" style="margin-top:14px;">
+      <p class="field-label">Classe commune</p>
+      <select class="class-select" id="commonClassSelect">
+        <option value="6ème">6ème</option>
+        <option value="5ème">5ème</option>
+        <option value="4ème">4ème</option>
+        <option value="3ème">3ème</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="studentsWrap"></div>
+
+  <button class="generate-btn" id="generateBtn">Générer la liste →</button>
+</div>
+
+<!-- ============ CHECKLIST VIEW ============ -->
+<div class="trail hidden" id="trail"></div>
+
+<div class="footer hidden" id="checklistFooter">
+  <button class="reset-btn" id="resetBtn">↺ Réinitialiser les cases cochées</button>
+  <div class="install-tip">
+    <span class="icn">📲</span>
+    <span><b>Pour l'installer sur l'écran d'accueil :</b> ouvrez cette page dans Safari, appuyez sur l'icône Partager, puis « Sur l'écran d'accueil ».</span>
+  </div>
+</div>
+
+<script>
+/* ===================== DATA / RULES ===================== */
+const LEVELS = ["6ème","5ème","4ème","3ème"];
+const ISBN = {"6ème":"9782095051808","5ème":"9782095063214","4ème":"9782091716367","3ème":"9782091716374"};
+const CAT_ORDER = ["Toutes disciplines","Français","Éducation aux médias / CDI","Histoire-Géo-EMC","Anglais","Espagnol (LV2)","Italien (LV2)","Mathématiques","SVT","Sciences Physiques (SPC)","Technologie","Éducation musicale","Arts plastiques","EPS"];
+
+function studentItems(s){
+  const items = [];
+  const push = (cat,label,qty,note) => items.push({cat, label, qty: qty||1, note: note||"", owner: s.name});
+
+  // Toutes disciplines
+  push("Toutes disciplines","Écouteurs filaires");
+  push("Toutes disciplines","Porte-vues 80 vues (à garder 4 ans)");
+  push("Toutes disciplines","Trousse complète","1","Feutres ardoise · 12 crayons couleur · stylo 4 couleurs · stylo effaçable + effaceurs · feutres couleur/ardoise/noir fin · crayon à papier/critérium + mines · 4 surligneurs · colle · gomme · scotch · taille-crayon · ciseaux · règle 30cm non métallique");
+  push("Toutes disciplines","Feuilles simples et doubles grands carreaux (évaluations)");
+  push("Toutes disciplines","Œillets (boîte)");
+  push("Toutes disciplines","Clé USB 4-8 Go minimum");
+  push("Toutes disciplines","Cahier de textes ou agenda");
+  if(s.level === "6ème") push("Toutes disciplines","Calculatrice scientifique Casio Fx-92+","1","Achat à la rentrée — sert aussi en Mathématiques et en SPC");
+  push("Toutes disciplines","Cadenas à clé (casiers)");
+
+  // Français
+  push("Français","Classeur souple épais A4");
+  push("Français","Paquet de 6 intercalaires");
+  push("Français","Grandes feuilles simples perforées, grands carreaux (100f/200p)");
+  push("Français","Grandes feuilles doubles perforées, grands carreaux (50f/200p)");
+  push("Français","Pochette cartonnée");
+  push("Français",`Cahier de grammaire Nathan (Terre des Lettres) — ${s.level}`,"1",`ISBN ${ISBN[s.level]}`);
+  if(s.level !== "6ème" && s.latin){
+    push("Français","Cahiers 24×32 cm, 48 pages grands carreaux — option Latin",2,"Réutilisables sur les 3 années — achat unique");
+  }
+
+  // CDI
+  if(s.level === "6ème"){
+    push("Éducation aux médias / CDI","Classeur souple peu épais A4");
+    push("Éducation aux médias / CDI","Feuilles simples grands carreaux A4");
+  }
+
+  // Histoire-Géo
+  push("Histoire-Géo-EMC","Grand cahier 24×32 cm, 96 pages grands carreaux");
+  push("Histoire-Géo-EMC","Copies simples et doubles grands carreaux (évaluations)");
+
+  // Anglais
+  push("Anglais","Grand cahier 24×32 cm, 96 pages grands carreaux");
+  push("Anglais","Workbook","1","Achat à la rentrée, selon consignes du professeur");
+
+  // LV2 / bilangue
+  if(s.level === "6ème"){
+    if(s.bilangue){
+      push("Italien (LV2)","Petit cahier 96 pages grands carreaux","1","Option bilangue — 6ème");
+      push("Italien (LV2)","Grand cahier 96 pages 24×32 grands carreaux","1","Option bilangue — 6ème");
+    }
+  } else {
+    if(s.lv2 === "espagnol"){
+      push("Espagnol (LV2)","Grands cahiers 24×32 cm, 48 pages grands carreaux",2);
+    } else if(s.lv2 === "italien"){
+      if(s.level === "5ème"){
+        push("Italien (LV2)","Petit cahier 96 pages grands carreaux");
+        push("Italien (LV2)","Grand cahier 96 pages 24×32 grands carreaux");
+      } else {
+        push("Italien (LV2)","Grand cahier 96 pages 24×32 grands carreaux");
+      }
+    }
+  }
+
+  // Maths
+  push("Mathématiques","Papier millimétré et papier calque (quelques feuilles)");
+  push("Mathématiques","Équerre et rapporteur non métalliques");
+  push("Mathématiques","Compas");
+  push("Mathématiques","Cahiers 24×32 cm, 96 pages petits carreaux",2);
+
+  // SVT
+  push("SVT","Classeur A4 (réutilisable 4 ans)");
+  push("SVT","Grandes feuilles simples perforées, grands carreaux (50f/100p)");
+  push("SVT","Grandes feuilles de dessin perforées A4");
+  push("SVT","Quelques feuilles doubles grands carreaux");
+  push("SVT","Papier calque et papier millimétré");
+
+  // SPC
+  push("Sciences Physiques (SPC)","Grand cahier 24×32 cm, 96 pages grands carreaux");
+  push("Sciences Physiques (SPC)","Vieux tee-shirt de protection manches courtes");
+  push("Sciences Physiques (SPC)","Élastique à cheveux");
+  push("Sciences Physiques (SPC)","Papier millimétré");
+  push("Sciences Physiques (SPC)","Feuilles simples et doubles grands carreaux");
+  if(s.level === "6ème") push("Sciences Physiques (SPC)","Porte-vues 60 vues (réutilisable 4 ans)","1","Pour les 6èmes et nouveaux élèves");
+
+  // Techno
+  if(s.level !== "6ème"){
+    push("Technologie","Classeur A4 peu épais (réutilisable 3 ans)");
+    push("Technologie","Paquet de pochettes transparentes perforées");
+    push("Technologie","Grandes feuilles simples perforées, petits carreaux (50f/100p)");
+  }
+
+  // Musique
+  push("Éducation musicale","Grand cahier 24×32 cm, 48 pages grands carreaux (réutilisable 4 ans)");
+  push("Éducation musicale","Stylo bleu ou noir simple (laissé dans le cahier)");
+
+  // Arts plastiques
+  push("Arts plastiques","Grand cahier 24×32 cm, 48 pages grands carreaux (réutilisable 4 ans)");
+  if(s.level === "6ème" || s.level === "4ème"){
+    push("Arts plastiques","Paquet de feuilles Canson blanc 24×32 cm","1","À apporter à la 1ère séance");
+  }
+
+  // EPS
+  push("EPS","Tenue de sport (short/jogging/legging + t-shirt de rechange)");
+  push("EPS","Vêtements de pluie");
+  push("EPS","Baskets extérieures");
+  push("EPS","Baskets intérieures (semelles non marquantes)");
+  push("EPS","Maillot de bain");
+  push("EPS","Bonnet de bain");
+  push("EPS","Lunettes de piscine");
+  push("EPS","Gourde d'eau");
+
+  return items;
+}
+
+/* ===================== STATE ===================== */
+const CONFIG_KEY = "fournitures-allais-config-v1";
+const CHECKED_KEY = "fournitures-allais-checked-v1";
+
+let state = {
+  count: 2,
+  sameClass: true,
+  commonLevel: "6ème",
+  students: [
+    {name:"", level:"6ème", bilangue:false, lv2:"espagnol", latin:false},
+    {name:"", level:"6ème", bilangue:false, lv2:"espagnol", latin:false},
+  ]
+};
+let checked = {};
+
+try{ const c = JSON.parse(localStorage.getItem(CONFIG_KEY)); if(c) state = c; }catch(e){}
+try{ checked = JSON.parse(localStorage.getItem(CHECKED_KEY) || "{}"); }catch(e){ checked = {}; }
+
+function saveConfig(){ try{ localStorage.setItem(CONFIG_KEY, JSON.stringify(state)); }catch(e){} }
+function saveChecked(){ try{ localStorage.setItem(CHECKED_KEY, JSON.stringify(checked)); }catch(e){} }
+
+function ensureStudentsLength(){
+  while(state.students.length < state.count){
+    const lvl = state.sameClass ? state.commonLevel : "6ème";
+    state.students.push({name:"", level:lvl, bilangue:false, lv2:"espagnol", latin:false});
+  }
+  state.students.length = state.count;
+  if(state.sameClass){
+    state.students.forEach(s => s.level = state.commonLevel);
+  }
+}
+
+/* ===================== SETUP RENDER ===================== */
+function renderSetup(){
+  document.getElementById('stepCount').textContent = state.count;
+  document.getElementById('sameClassSwitch').classList.toggle('on', state.sameClass);
+  document.getElementById('commonClassWrap').classList.toggle('hidden', !state.sameClass);
+  document.getElementById('commonClassSelect').value = state.commonLevel;
+
+  ensureStudentsLength();
+
+  const wrap = document.getElementById('studentsWrap');
+  wrap.innerHTML = "";
+
+  state.students.forEach((s, i) => {
+    const card = document.createElement('div');
+    card.className = 'student-card';
+
+    const head = document.createElement('div');
+    head.className = 'student-head';
+    head.innerHTML = `<div class="student-num">${i+1}</div>`;
+    const nameInput = document.createElement('input');
+    nameInput.className = 'name-input';
+    nameInput.placeholder = `Élève ${i+1}`;
+    nameInput.value = s.name;
+    nameInput.addEventListener('input', e => { s.name = e.target.value; saveConfig(); });
+    head.appendChild(nameInput);
+    card.appendChild(head);
+
+    if(!state.sameClass){
+      const fg = document.createElement('div');
+      fg.className = 'field-group';
+      fg.innerHTML = `<p class="field-label">Classe</p>`;
+      const sel = document.createElement('select');
+      sel.className = 'class-select';
+      LEVELS.forEach(l => {
+        const opt = document.createElement('option');
+        opt.value = l; opt.textContent = l;
+        if(s.level === l) opt.selected = true;
+        sel.appendChild(opt);
+      });
+      sel.addEventListener('change', e => { s.level = e.target.value; saveConfig(); renderSetup(); });
+      fg.appendChild(sel);
+      card.appendChild(fg);
+    }
+
+    if(s.level === "6ème"){
+      const fg = document.createElement('div');
+      fg.className = 'field-group';
+      const line = document.createElement('label');
+      line.className = 'check-line';
+      line.innerHTML = `<input type="checkbox" ${s.bilangue ? 'checked' : ''}><span>Option italien bilangue</span>`;
+      line.querySelector('input').addEventListener('change', e => { s.bilangue = e.target.checked; saveConfig(); });
+      fg.appendChild(line);
+      card.appendChild(fg);
+    } else {
+      const fgLv2 = document.createElement('div');
+      fgLv2.className = 'field-group';
+      fgLv2.innerHTML = `<p class="field-label">LV2</p>`;
+      const pillRow = document.createElement('div');
+      pillRow.className = 'pill-row';
+      ['espagnol','italien'].forEach(v => {
+        const pill = document.createElement('div');
+        pill.className = 'pill' + (s.lv2 === v ? ' active' : '');
+        pill.textContent = v === 'espagnol' ? 'Espagnol' : 'Italien';
+        pill.addEventListener('click', () => { s.lv2 = v; saveConfig(); renderSetup(); });
+        pillRow.appendChild(pill);
+      });
+      fgLv2.appendChild(pillRow);
+      card.appendChild(fgLv2);
+
+      const fgLatin = document.createElement('div');
+      fgLatin.className = 'field-group';
+      const line = document.createElement('label');
+      line.className = 'check-line';
+      line.innerHTML = `<input type="checkbox" ${s.latin ? 'checked' : ''}><span>Option Latin</span>`;
+      line.querySelector('input').addEventListener('change', e => { s.latin = e.target.checked; saveConfig(); });
+      fgLatin.appendChild(line);
+      card.appendChild(fgLatin);
+    }
+
+    wrap.appendChild(card);
+  });
+}
+
+document.getElementById('stepDown').addEventListener('click', () => {
+  state.count = Math.max(1, state.count - 1); saveConfig(); renderSetup();
+});
+document.getElementById('stepUp').addEventListener('click', () => {
+  state.count = Math.min(6, state.count + 1); saveConfig(); renderSetup();
+});
+document.getElementById('sameClassSwitch').addEventListener('click', () => {
+  state.sameClass = !state.sameClass; saveConfig(); renderSetup();
+});
+document.getElementById('commonClassSelect').addEventListener('change', e => {
+  state.commonLevel = e.target.value; saveConfig(); renderSetup();
+});
+
+/* ===================== CHECKLIST BUILD & RENDER ===================== */
+function buildMergedList(){
+  const merged = {};
+  state.students.forEach((s, i) => {
+    const name = s.name && s.name.trim() ? s.name.trim() : `Élève ${i+1}`;
+    const items = studentItems(Object.assign({}, s, {name}));
+    items.forEach(it => {
+      const key = it.cat + "||" + it.label + "||" + it.note;
+      if(!merged[key]) merged[key] = {cat: it.cat, label: it.label, note: it.note, qty: 0, owners: []};
+      merged[key].qty += it.qty;
+      merged[key].owners.push(name);
+    });
+  });
+  return merged;
+}
+
+function renderChecklist(){
+  const merged = buildMergedList();
+  const totalStudents = state.count;
+
+  const byCat = {};
+  Object.values(merged).forEach(it => {
+    if(!byCat[it.cat]) byCat[it.cat] = [];
+    byCat[it.cat].push(it);
+  });
+
+  const trail = document.getElementById('trail');
+  trail.innerHTML = "";
+  let totalItems = 0, totalChecked = 0;
+  let first = true;
+
+  CAT_ORDER.forEach(cat => {
+    const list = byCat[cat];
+    if(!list || !list.length) return;
+
+    let catDone = 0;
+    const catEl = document.createElement('div');
+    catEl.className = 'category' + (first ? ' open' : '');
+    first = false;
+
+    const dot = document.createElement('div');
+    dot.className = 'dot';
+
+    const head = document.createElement('div');
+    head.className = 'cat-head';
+    const countSpan = document.createElement('span');
+    countSpan.className = 'cat-count';
+    head.innerHTML = `<span class="cat-title">${cat}</span>`;
+    head.appendChild(countSpan);
+    const chev = document.createElement('span'); chev.className = 'chevron';
+    head.appendChild(chev);
+    head.addEventListener('click', () => catEl.classList.toggle('open'));
+
+    const itemsEl = document.createElement('div');
+    itemsEl.className = 'items';
+
+    list.forEach(it => {
+      const id = it.cat + "|" + it.label + "|" + it.note;
+      totalItems++;
+      if(checked[id]) { totalChecked++; catDone++; }
+
+      const row = document.createElement('div');
+      row.className = 'item-row' + (checked[id] ? ' checked' : '');
+
+      const box = document.createElement('div');
+      box.className = 'check';
+      box.innerHTML = '<svg viewBox="0 0 12 12" fill="none"><path d="M1.5 6L4.5 9L10.5 2" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+      const text = document.createElement('div');
+      text.className = 'item-text';
+      const qtyPrefix = it.qty > 1 ? `${it.qty} × ` : "";
+      let html = qtyPrefix + it.label;
+      if(it.note) html += `<span class="item-note">${it.note}</span>`;
+      if(it.owners.length < totalStudents){
+        const uniqueOwners = [...new Set(it.owners)];
+        html += `<span class="owner-chips">${uniqueOwners.map(o => `<span class="owner-chip">${o}</span>`).join("")}</span>`;
+      }
+      text.innerHTML = html;
+
+      const toggle = () => { checked[id] = !checked[id]; saveChecked(); renderChecklist(); };
+      box.addEventListener('click', toggle);
+      text.addEventListener('click', toggle);
+
+      row.appendChild(box); row.appendChild(text);
+      itemsEl.appendChild(row);
+    });
+
+    countSpan.textContent = `${catDone}/${list.length}`;
+    dot.classList.toggle('done', catDone === list.length);
+    catEl.appendChild(dot);
+    catEl.appendChild(head);
+    catEl.appendChild(itemsEl);
+    trail.appendChild(catEl);
+  });
+
+  document.getElementById('progressCount').textContent = totalChecked + " / " + totalItems;
+  document.getElementById('progressFill').style.width = (totalItems ? (totalChecked/totalItems*100) : 0) + "%";
+}
+
+/* ===================== VIEW SWITCHING ===================== */
+function showSetup(){
+  document.getElementById('setupView').classList.remove('hidden');
+  document.getElementById('trail').classList.add('hidden');
+  document.getElementById('checklistFooter').classList.add('hidden');
+  document.getElementById('progressWrap').classList.add('hidden');
+  document.getElementById('gearBtn').classList.add('hidden');
+  document.getElementById('heroEyebrow').textContent = "Configuration";
+  document.getElementById('heroSubtitle').textContent = "Indiquez le nombre d'élèves, leur classe et leurs options pour générer la liste consolidée.";
+  renderSetup();
+}
+function showChecklist(){
+  document.getElementById('setupView').classList.add('hidden');
+  document.getElementById('trail').classList.remove('hidden');
+  document.getElementById('checklistFooter').classList.remove('hidden');
+  document.getElementById('progressWrap').classList.remove('hidden');
+  document.getElementById('gearBtn').classList.remove('hidden');
+  document.getElementById('heroEyebrow').textContent = "Rentrée 2026 / 2027";
+  const names = state.students.map((s,i) => s.name && s.name.trim() ? s.name.trim() : `Élève ${i+1}`);
+  document.getElementById('heroSubtitle').textContent = `Liste consolidée pour ${names.join(", ")}.`;
+  renderChecklist();
+}
+
+document.getElementById('generateBtn').addEventListener('click', () => { saveConfig(); showChecklist(); });
+document.getElementById('gearBtn').addEventListener('click', showSetup);
+document.getElementById('resetBtn').addEventListener('click', () => {
+  if(confirm("Réinitialiser toutes les cases cochées ?")){ checked = {}; saveChecked(); renderChecklist(); }
+});
+
+/* ===================== INIT ===================== */
+ensureStudentsLength();
+showSetup();
+</script>
+
+</body>
+</html>

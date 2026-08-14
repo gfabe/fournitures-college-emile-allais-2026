@@ -214,7 +214,7 @@ const TYPE_ORDER = ["Cahiers, classeurs & porte-vues","Papier & feuilles","Trous
 
 function studentItems(s){
   const items = [];
-  const push = (cat,label,qty,note,type) => items.push({cat, label, qty: qty||1, note: note||"", owner: s.name, type: type || "Divers"});
+  const push = (cat,label,qty,note,type) => items.push({cat, label, qty: Number(qty)||1, note: note||"", owner: s.name, type: type || "Divers"});
   const T = {
     CAHIER: "Cahiers, classeurs & porte-vues",
     PAPIER: "Papier & feuilles",
